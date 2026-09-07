@@ -171,8 +171,7 @@ hybrid's band AUPRC.
 
 ## 10. Honest limitations
 
-- Synthetic data: absolute numbers are not IEEE-CIS numbers; the *comparison*
-  (QRC vs ESN vs LightGBM under identical splits) is the transferable result.
+- Real IEEE-CIS data (chronological holdout). `entity_key` is a proxy (no true customer ID in IEEE-CIS), so per-entity history is noisier than a real customer ID would give.
 - A 6-qubit reservoir is, per Fujii & Nakajima, in the class of a
   ~100-500 node ESN. Do not extrapolate to "quantum advantage".
 - Quantum execution is offline. Production value = feature discovery + distillation.
