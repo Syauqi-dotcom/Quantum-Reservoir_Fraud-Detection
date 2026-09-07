@@ -1,0 +1,38 @@
+[    0.4s] loading IEEE-CIS Fraud Detection (real Kaggle csv) ...
+[   24.4s]   590,540 transactions | fraud rate 3.499% | 39,974 entities | 422 raw IEEE features
+[   24.4s]   fraud composition: {'unknown': 20663}
+[   24.6s]   split: train 354,324 | val 118,108 | test 118,108
+[  156.9s] training baselines ...
+[  509.4s] entity-level smoothing (IEEE-CIS 1st-place style) ...
+[  635.5s]   alpha* (frozen on validation) = 0.75
+[  635.5s]   B4 baseline AUPRC            = 0.4644
+[  635.5s]   + causal smoothing (real-time)= 0.4715  delta=+0.0071 CI=[+0.0027,+0.0112]
+[  635.5s]   + batch smoothing (AUDIT ONLY)= 0.2531  delta=-0.2113 CI=[-0.2244,-0.1982]
+[  635.5s] fitting ambiguity band on validation ...
+[  635.5s]   band = [0.0312, 0.3067]  t*=0.0194  routed(val)=17.575%  pos(train+val)=5299
+[  635.5s]   train: routed 15.660%  fraud-in-band 6.263%  (vs 3.383% overall)
+[  635.5s]   val: routed 17.575%  fraud-in-band 8.787%  (vs 3.904% overall)
+[  635.5s]   test: routed 17.050%  fraud-in-band 7.727%  (vs 3.441% overall)
+[  635.5s] building per-entity sequences for the ambiguous band ...
+[  660.7s]   band train: n=55488  fraud=3475
+[  660.7s]   band val: n=20758  fraud=1824
+[  660.7s]   band test: n=20137  fraud=1556
+[  660.7s]   QRC embed [main] n=96383 qubits=6 M=1 shots=None
+[ 1507.7s]   QRC embed done in 846.9s  dim=144
+[ 9118.3s]   ESN embed done  dim=188
+[ 9118.7s]   reduced embeddings -> QRC 28  ESN 28
+[ 9118.7s] fitting fusion / readout variants ...
+[ 9119.4s]   qrc_only                C=0.01  test-band AUPRC=0.1315
+[ 9119.7s]   score_fusion            C=0.01  test-band AUPRC=0.1311
+[ 9120.5s]   feature_fusion          C=10.0  test-band AUPRC=0.1327
+[ 9121.0s]   feature_fusion_no_p0    C=0.03  test-band AUPRC=0.1315
+[ 9121.5s]   ESN qrc_only           C=0.01  test-band AUPRC=0.1361
+[ 9122.1s]   ESN score_fusion       C=100.0  test-band AUPRC=0.1350
+[ 9123.3s]   ESN feature_fusion     C=0.3  test-band AUPRC=0.1365
+[ 9123.3s]   deployed fusion head = score_fusion  (val AUPRC score_fusion=0.1880 feature_fusion=0.1989)
+[ 9123.3s]   frozen hybrid decision threshold (val, recall 0.9) = 0.0194
+[ 9123.3s] computing metrics ...
+[13436.9s] multi-seed check ...
+[14779.5s]   seed 7: dAUPRC(full)=-0.0151 [-0.0166,-0.0137]  dFDR=+0.0194  vs ESN band=-0.0039
+[15619.5s]   seed 13: dAUPRC(full)=-0.0145 [-0.0160,-0.0131]  dFDR=+0.0194  vs ESN band=-0.0032
+[15619.5s] ablations ...

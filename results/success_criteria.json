@@ -1,0 +1,30 @@
+{
+  "c1_delta_auprc_positive_ci": {
+    "pass_": false,
+    "delta": -0.015121166672897923,
+    "ci_low": -0.016533581260364905,
+    "ci_high": -0.013705920550412585,
+    "p_gt0": 0.0
+  },
+  "c2_false_decline_reduced_ci": {
+    "pass_": false,
+    "delta": 0.019413559678720493,
+    "ci_low": 0.0034236275037269567,
+    "ci_high": 0.041480242471870904,
+    "p_gt0": 1.0
+  },
+  "c3_vs_esn_on_band": {
+    "beats_esn": false,
+    "parity_with_esn": true,
+    "pass_": true,
+    "delta": -0.003871190841213401,
+    "ci_low": -0.007100296143364357,
+    "ci_high": -0.0007297238948825295,
+    "p_gt0": 0.008
+  },
+  "c4_holds_across_seeds": {
+    "pass_": false
+  },
+  "overall_measurable_improvement": false,
+  "note": "PoC verdict only. Never labelled 'quantum advantage'. A 6-8 qubit QRC is comparable to a small classical ESN (Fujii & Nakajima 2016); the bar here is parity with the ESN AND improvement over the tuned GBDT baseline. Any gain is a NISQ-era feature-discovery result, validated offline."
+}

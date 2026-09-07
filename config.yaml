@@ -1,0 +1,187 @@
+# =====================================================================
+# Abstraction  -  Hybrid LightGBM + Quantum Reservoir Computing (QRC)
+# Configuration for the HSBC "Quantum-Enhanced Credit Card Fraud
+# Detection" challenge proof-of-concept.
+#
+# Every knob is here.  Thresholds that must be frozen *before* looking
+# at the held-out test set are marked FROZEN and are written to
+# results/manifest.json at run time.
+# =====================================================================
+
+run:
+  seed: 42
+  quick: false          # true -> small/fast config for smoke tests
+  outdir: results
+
+# ---------------------------------------------------------------------
+# 1. Synthetic data  (stand-in for IEEE-CIS: no Kaggle credentials in
+#    this environment).  Generator reproduces the properties HSBC calls
+#    out: ~3.5% fraud, card-not-present, per-entity transaction history,
+#    "static" fraud vs "sequential / account-takeover" fraud, plus
+#    legitimate-but-suspicious transactions (false-decline candidates).
+# ---------------------------------------------------------------------
+data:
+  # --- real IEEE-CIS run (python run_experiment.py --data ieee) ---
+  ieee_dir: null            # null -> auto-detect dataset/*IEEE-CIS*/ ; else explicit path
+  ieee_subsample: null      # null -> full 590,540 train rows ; int -> systematic time-preserving subsample
+  # --- synthetic generator (default) ---
+  n_entities: 6000
+  days: 200
+  avg_txn_per_entity: 13.0
+  fraud_rate: 0.035           # surplus fraud rows are dropped to hit this exactly
+  # fraud-class composition is controlled by these injection rates (pre-rebalance)
+  p_static_fraud_per_txn: 0.016    # obvious from one transaction  -> LightGBM catches
+  p_sequence_fraud_per_entity: 0.06  # only the *sequence* is anomalous -> temporal models help
+  p_hard_fraud_per_txn: 0.006      # almost no signal anywhere      -> mostly missed (realistic)
+  frac_legit_anomalous: 0.08  # legit but looks suspicious statically -> false-decline risk
+  # entity-key sensitivity test (improvement #1 from the review)
+  entity_keys:
+    E1: [card1, card2, card3]
+    E2: [card1, card2, card3, addr1]
+
+split:
+  strategy: chronological     # FROZEN - never random for the headline number
+  train: 0.60
+  val: 0.20
+  test: 0.20
+
+# ---------------------------------------------------------------------
+# 2. Classical baselines
+# ---------------------------------------------------------------------
+baselines:
+  lightgbm:
+    n_estimators: 600
+    learning_rate: 0.03
+    num_leaves: 64
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_samples: 40
+    class_weight: balanced
+  catboost:
+    # per the IEEE-CIS 1st-place writeup, CatBoost was the strongest SINGLE
+    # GBDT of the three they ensembled - included here as a fair sanity
+    # check that B4's strength isn't an artifact of picking LightGBM.
+    iterations: 600
+    learning_rate: 0.05
+    depth: 6
+  calibration: isotonic       # fit on validation only
+
+# ---------------------------------------------------------------------
+# entity-level smoothing (Stage H) - the IEEE-CIS 1st-place solution's other
+# big lever besides feature engineering: replace a transaction's score with
+# its card/client's average score.
+smoothing:
+  enabled: true
+  alpha_grid: [1.0, 0.75, 0.5, 0.25, 0.0]   # 1.0 = no smoothing, 0.0 = fully replaced
+  # causal_smooth (alpha blend of own score + PAST-only entity mean) is
+  # real-time deployable; batch_smooth (exact Kaggle trick, whole-batch mean)
+  # is reported only as an offline/audit ceiling, never as deployable.
+
+# ---------------------------------------------------------------------
+# 3. Ambiguity router  (Stage B)
+# ---------------------------------------------------------------------
+routing:
+  target_fraud_recall: 0.90   # FROZEN - operating point for false-decline accounting = band lower edge
+  review_recall: 0.45         # FROZEN - band upper edge (above it: auto-decline / manual review)
+  routing_budget: 0.20        # FROZEN - max fraction of transactions sent to QRC
+  # tau_low / tau_high are LEARNED on validation and then FROZEN
+  tau_low: null
+  tau_high: null
+
+# ---------------------------------------------------------------------
+# 4. Sequence builder  (Stage C)
+# ---------------------------------------------------------------------
+sequence:
+  K: 8                        # max past transactions per entity
+  step_features:
+    - amt_z_entity            # log amount, z-scored vs entity running mean
+    - amt_ratio_median        # amount / entity running median
+    - dlog_time               # log seconds since entity's previous txn
+    - device_changed          # vs entity's previous device
+    - addr_changed            # vs entity's previous addr
+    - email_risk
+    - burst_24h               # entity txn count in previous 24h (past-only)
+    - hist_score              # calibrated LightGBM score of the previous txn
+
+# ---------------------------------------------------------------------
+# 5. Quantum reservoir  (Stage D)  -  transverse-field Ising, fixed
+# ---------------------------------------------------------------------
+qrc:
+  n_qubits: 6                 # start 4, sweep 6 / 8
+  input_qubits: 3             # qubits that get re-initialised each (sub)step
+  reupload_rounds: 3          # data re-uploading: 3 input qubits x 3 rounds = 9 slots >= 8 features
+  virtual_nodes: 4            # time-multiplexing sub-samples per step  (V)
+  dt: 0.75                    # tau * Delta  (dimensionless evolution time per step; swept below)
+  J: 1.0                      # Ising coupling scale ; J_ij ~ U(-J/2, J/2)
+  h: 0.5                      # transverse field
+  observables: [single_z, zz] # <Z_i> and <Z_i Z_j>
+  spatial_multiplex: 1        # M independent reservoirs, embeddings concatenated
+  shots: null                 # null = ideal statevector ; sweep 100/500/1000/4000
+  reservoir_seeds: [7, 13]    # >=2 seeds required by the frozen success criteria
+
+# ---------------------------------------------------------------------
+# 6. Classical reservoir baseline  (Echo State Network)  -  the key
+#    "is the quantum reservoir actually better than a classical one?"
+#    control.
+# ---------------------------------------------------------------------
+esn:
+  reservoir_size: 90          # kept close to the QRC embedding dim for a fair fight
+  spectral_radius: 0.9
+  leak_rate: 0.7
+  input_scaling: 0.5
+  sparsity: 0.15
+
+# ---------------------------------------------------------------------
+# 7. Fusion / readout  (Stage E)
+# ---------------------------------------------------------------------
+fusion:
+  model: logistic             # regularised logistic regression (auditable)
+  embed_pca_dim: 28           # PCA-reduce the reservoir embedding before the read-out
+  C_grid: [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0]
+  context_features: [amt_z_entity, dlog_time, device_changed, seq_len]
+  variants:
+    - qrc_only                # z_qrc            -> Q0
+    - score_fusion            # [logit(p0), qrc_score] -> Q1
+    - feature_fusion          # [logit(p0), z_qrc, context] -> Q2 / Q3
+    - feature_fusion_no_p0    # [z_qrc, context]  (ablation: is p0 doing all the work?)
+
+# ---------------------------------------------------------------------
+# 8. Distillation  (Stage F)  -  carry the QRC signal to a real-time
+#    classical model.
+# ---------------------------------------------------------------------
+distill:
+  student: lightgbm_shallow
+  n_estimators: 200
+  num_leaves: 16
+  max_depth: 4
+
+# ---------------------------------------------------------------------
+# 9. Evaluation
+# ---------------------------------------------------------------------
+eval:
+  primary_metric: auprc
+  fixed_recall_points: [0.90, 0.95]
+  bootstrap_iters: 2000
+  ci: 0.95
+
+# ---------------------------------------------------------------------
+# 10. Frozen success criteria  (written to manifest before test peek)
+# ---------------------------------------------------------------------
+success_criteria:
+  c1_delta_auprc_positive_ci: true      # Q3 vs B4 on full test, 95% paired-bootstrap CI > 0
+  c2_false_decline_reduced_ci: true     # at target_fraud_recall, CI on delta FDR < 0
+  c3_beats_esn_on_band: true            # Q3 > ESN-fusion on the ambiguous band (AUPRC)
+  c4_holds_across_seeds: true           # both hold for every reservoir seed
+  # overall PoC is "measurable improvement" if (c1 OR c2) AND c3 AND c4.
+  # Never claim "quantum advantage" from this PoC regardless of outcome.
+
+ablations:
+  enabled: true
+  no_entanglement: true       # J_ij = 0
+  shuffle_sequence: true      # destroy temporal order
+  random_reservoir: true      # Haar-ish random unitary instead of Ising evolution
+  no_history: true            # K = 1
+  shots_sweep: [128, 1024, 8192]
+  qubit_sweep: [4]            # 6 is the main config
+  K_sweep: [4]               # 8 is the main config
+  dt_sweep: [0.4, 1.5]       # 0.75 is the main config

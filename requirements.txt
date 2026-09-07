@@ -1,0 +1,12 @@
+# Python 3.13 ; create a venv and `pip install -r requirements.txt`
+numpy==2.5.2
+pandas==3.0.5
+scikit-learn==1.9.0
+scipy==1.18.1
+matplotlib==3.11.1
+lightgbm==4.7.0
+catboost==1.2.10
+shap==0.52.0
+PyYAML==6.0.3
+# optional - only for the gate-level Braket-portable cross-check (src/qrc_pennylane.py)
+pennylane==0.45.1

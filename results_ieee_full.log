@@ -1,0 +1,53 @@
+[    0.3s] loading IEEE-CIS Fraud Detection (real Kaggle csv) ...
+[   17.6s]   590,540 transactions | fraud rate 3.499% | 39,974 entities | 422 raw IEEE features
+[   17.7s]   fraud composition: {'unknown': 20663}
+[   17.8s]   split: train 354,324 | val 118,108 | test 118,108
+[  167.6s] training baselines ...
+[  509.9s] entity-level smoothing (IEEE-CIS 1st-place style) ...
+[  655.5s]   alpha* (frozen on validation) = 0.75
+[  655.5s]   B4 baseline AUPRC            = 0.4644
+[  655.5s]   + causal smoothing (real-time)= 0.4715  delta=+0.0071 CI=[+0.0027,+0.0112]
+[  655.5s]   + batch smoothing (AUDIT ONLY)= 0.2531  delta=-0.2113 CI=[-0.2244,-0.1982]
+[  655.5s] fitting ambiguity band on validation ...
+[  655.5s]   band = [0.0312, 0.3067]  t*=0.0194  routed(val)=17.575%  pos(train+val)=5299
+[  655.5s]   train: routed 15.660%  fraud-in-band 6.263%  (vs 3.383% overall)
+[  655.5s]   val: routed 17.575%  fraud-in-band 8.787%  (vs 3.904% overall)
+[  655.5s]   test: routed 17.050%  fraud-in-band 7.727%  (vs 3.441% overall)
+[  655.5s] building per-entity sequences for the ambiguous band ...
+[  692.7s]   band train: n=55488  fraud=3475
+[  692.7s]   band val: n=20758  fraud=1824
+[  692.7s]   band test: n=20137  fraud=1556
+[  692.8s]   QRC embed [main] n=96383 qubits=6 M=1 shots=None
+[ 1480.0s]   QRC embed done in 787.2s  dim=144
+[ 1484.6s]   ESN embed done  dim=188
+[ 1484.8s]   reduced embeddings -> QRC 28  ESN 28
+[ 1484.8s] fitting fusion / readout variants ...
+[ 1485.5s]   qrc_only                C=0.01  test-band AUPRC=0.1315
+[ 1485.8s]   score_fusion            C=0.01  test-band AUPRC=0.1311
+[ 1486.6s]   feature_fusion          C=10.0  test-band AUPRC=0.1327
+[ 1487.1s]   feature_fusion_no_p0    C=0.03  test-band AUPRC=0.1315
+[ 1487.5s]   ESN qrc_only           C=0.01  test-band AUPRC=0.1361
+[ 1488.1s]   ESN score_fusion       C=100.0  test-band AUPRC=0.1350
+[ 1489.0s]   ESN feature_fusion     C=0.3  test-band AUPRC=0.1365
+[ 1489.0s]   deployed fusion head = score_fusion  (val AUPRC score_fusion=0.1880 feature_fusion=0.1989)
+[ 1489.0s]   frozen hybrid decision threshold (val, recall 0.9) = 0.0194
+[ 1489.0s] computing metrics ...
+[ 1862.0s] multi-seed check ...
+[ 2698.5s]   seed 7: dAUPRC(full)=-0.0151 [-0.0166,-0.0137]  dFDR=+0.0194  vs ESN band=-0.0039
+[ 3602.0s]   seed 13: dAUPRC(full)=-0.0145 [-0.0160,-0.0131]  dFDR=+0.0194  vs ESN band=-0.0032
+[ 3602.0s] ablations ...
+[12618.6s] distillation to a real-time classical student ...
+[12622.3s]   student band AUPRC 0.1137 vs hybrid 0.1311  latency 0.0031 ms/txn
+[12622.3s] attribution + predictions.csv ...
+/home/quantoqi/Documents/Quantum-Hackaton/QuantumInsider/experiment/.venv/lib/python3.13/site-packages/shap/explainers/_tree.py:632: UserWarning: LightGBM binary classifier with TreeExplainer shap values output has changed to a list of ndarray
+  warnings.warn(
+[13461.3s] evaluating frozen success criteria ...
+[13461.4s] plots ...
+[13462.8s] DONE in 13462.8s -> /home/quantoqi/Documents/Quantum-Hackaton/QuantumInsider/experiment/results
+
+==== SUCCESS CRITERIA ====
+  c1_delta_auprc_positive_ci             fail
+  c2_false_decline_reduced_ci            fail
+  c3_vs_esn_on_band                      PASS
+  c4_holds_across_seeds                  fail
+  OVERALL measurable improvement         NO
