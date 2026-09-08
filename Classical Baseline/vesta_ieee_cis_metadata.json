@@ -1,0 +1,21 @@
+{
+  "requested_dataset": "Kaggle IEEE-CIS Fraud Detection (Vesta Corporation)",
+  "retrieval": "OpenML public mirror, dataset ID 46858, version 2",
+  "kaggle_url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data",
+  "source_rows": 590540,
+  "source_predictors_after_filtering": 432,
+  "source_frauds": 20663,
+  "sample_rows": 100000,
+  "sample_predictors": 432,
+  "sample_frauds": 3499,
+  "dropped_id_columns": 0,
+  "dropped_all_missing_columns": 23,
+  "sample_fraud_rate": 0.03499,
+  "train_rows": 80000,
+  "test_rows": 20000,
+  "test_fraud_cases": 700,
+  "split": "stratified 80/20 holdout after deterministic stratified sampling",
+  "random_seed": 42,
+  "decision_threshold": 0.5,
+  "primary_metric": "PR-AUC (average precision)"
+}
