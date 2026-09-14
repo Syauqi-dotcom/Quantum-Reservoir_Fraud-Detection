@@ -22,7 +22,8 @@ experiment/
 │   ├── sequence.py        Stage C — per-entity sequence builder + angle scaler
 │   ├── qrc.py             Stage D — transverse-field Ising quantum reservoir
 │   │                                (exact NumPy density-matrix simulator)
-│   ├── qrc_pennylane.py   gate-level Braket-portable circuit + cross-check
+│   ├── qrc_pennylane.py   gate-level Braket-portable circuit + cross-check (PennyLane)
+│   ├── qrc_braket.py      same circuit, run on the Amazon Braket SDK's own LocalSimulator
 │   ├── esn.py             Stage D — classical Echo State Network (control reservoir)
 │   ├── fusion.py          Stage E — logistic readout / fusion + recalibration
 │   ├── distill.py         Stage F — real-time classical student
@@ -61,6 +62,7 @@ python3 -m venv .venv
 ./.venv/bin/python run_experiment.py --data synthetic --outdir experiments/synthetic  # design benchmark (~15 min)
 ./.venv/bin/python run_experiment.py --data ieee --quick --outdir experiments/ieee_smoke  # IEEE smoke run (~8 min)
 ./.venv/bin/python -m src.qrc_pennylane                               # verify the QRC simulator vs PennyLane
+./.venv/bin/python -m src.qrc_braket                                  # verify the QRC simulator vs Amazon Braket
 ```
 
 Place the extracted Kaggle files under `dataset/…IEEE-CIS…/` (or set

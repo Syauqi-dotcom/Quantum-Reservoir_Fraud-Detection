@@ -10,3 +10,6 @@ shap==0.52.0
 PyYAML==6.0.3
 # optional - only for the gate-level Braket-portable cross-check (src/qrc_pennylane.py)
 pennylane==0.45.1
+# optional - only for the Amazon Braket cross-check (src/qrc_braket.py); LocalSimulator
+# needs no AWS account/credentials, runs entirely on this machine
+amazon-braket-sdk==1.127.0
