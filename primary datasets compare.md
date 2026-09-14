@@ -6,13 +6,14 @@ brief's *primary* dataset) vs the synthetic CNP generator (a design benchmark).
 
 | run | rows | config | status | dir |
 |---|---|---|---|---|
-| **IEEE-CIS (full)** | **590,540** | full, seeds 7 & 13 | ✅ complete (~3.7 h) | `results/` |
-| IEEE-CIS (smoke) | 40,000 | `--quick`, 1 seed | ✅ complete | `results_ieee_smoke/` |
-| Synthetic (design benchmark) | 77,258 | full, 2 seeds | ✅ complete | `results_synthetic/` * |
+| **IEEE-CIS (full)** | **590,540** | full, seeds 7 & 13 | ✅ complete (~3.7 h) | `experiments/ieee_full/` |
+| IEEE-CIS (smoke) | 40,000 | `--quick`, 1 seed | ✅ complete | `experiments/ieee_smoke/` |
+| Synthetic (design benchmark) | 77,258 | full, 2 seeds | ✅ complete | `experiments/synthetic/` * |
 
-\* regenerate with `run_experiment.py --data synthetic --outdir results_synthetic`
-(the synthetic full run's outputs were overwritten by the IEEE run; its numbers
-are preserved in this document).
+\* regenerate with `run_experiment.py --data synthetic --outdir experiments/synthetic`
+(the synthetic full run's outputs were overwritten by the IEEE run since both
+reused the same output dir; its numbers are preserved in this document and its
+log survives as `experiments/ieee_full/synthetic_run_stale.log`).
 
 **Reading order:** the **IEEE-590k** column is the headline. The synthetic
 column is the upper-bound sanity check — the generator *injects*

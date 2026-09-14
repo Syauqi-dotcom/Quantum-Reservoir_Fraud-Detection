@@ -7,11 +7,11 @@ and writes the challenge-required outputs.
 
 ```
 experiment/
-├── config.yaml            all knobs; frozen thresholds written to results/manifest.json
+├── config.yaml            all knobs; frozen thresholds written to <outdir>/manifest.json
 ├── requirements.txt
 ├── run_experiment.py      thin CLI  ->  python run_experiment.py [--quick] [--data ieee]
 ├── src/
-│   ├── pipeline.py        orchestrator — runs Stage A→H in order, writes results/
+│   ├── pipeline.py        orchestrator — runs Stage A→H in order, writes <outdir>/
 │   ├── data.py            Stage A — synthetic IEEE-CIS-like CNP generator (no Kaggle creds here)
 │   ├── data_ieee.py       Stage A — real IEEE-CIS Kaggle csv loader (same schema)
 │   ├── features.py        Stage A — static + past-only rolling features (leakage-safe)
@@ -29,24 +29,37 @@ experiment/
 │   ├── evaluate.py        metrics + paired bootstrap
 │   ├── attribution.py     SHAP / grouped fusion attribution
 │   ├── plots.py           diagnostic plots
-│   └── report.py          renders results/report.md from the metrics dicts
-└── results/               ← generated
-    ├── manifest.json          frozen config, thresholds, seeds, versions, quantum resource
-    ├── metrics.json           every model × {full test, ambiguous band} + bootstrap deltas
-    ├── success_criteria.json  pass/fail of the pre-registered criteria
-    ├── predictions.csv        TransactionID, fraud_probability, fraud_prediction, route, feature_attribution
-    ├── report.md              auto-generated write-up
-    └── plots/*.png
+│   └── report.py          renders <outdir>/report.md from the metrics dicts
+└── experiments/           ← generated, one self-contained folder per run
+    ├── ieee_full/             PRIMARY: real IEEE-CIS, full 590,540 rows
+    │   ├── manifest.json          frozen config, thresholds, seeds, versions, quantum resource
+    │   ├── metrics.json           every model × {full test, ambiguous band} + bootstrap deltas
+    │   ├── success_criteria.json  pass/fail of the pre-registered criteria
+    │   ├── predictions.csv        TransactionID, fraud_probability, fraud_prediction, route, feature_attribution
+    │   ├── report.md              auto-generated write-up
+    │   ├── run_full.log           run log
+    │   ├── plots/*.png
+    │   └── code/                  snapshot of src/, run_experiment.py, config.yaml as they
+    │                               were when this run was produced (see code/SNAPSHOT_NOTE.md) —
+    │                               makes the folder runnable standalone on another machine
+    ├── ieee_smoke/            IEEE-CIS, --quick smoke run (same layout as above)
+    └── synthetic/             synthetic design-benchmark run (same layout as above)
 ```
+
+Each `experiments/<name>/` folder is fully self-contained (code snapshot +
+config-derived outputs + run log) — copy the folder alone to move a run to
+another machine. The same pipeline code produced every experiment (no code
+forks between them); only config values and `--data` differ, and the exact
+effective config for a given run is frozen into that run's `manifest.json`.
 
 ## Run
 
 ```bash
 python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
-./.venv/bin/python run_experiment.py --data ieee                      # PRIMARY: real IEEE-CIS (~3.5 h) -> results/
-./.venv/bin/python run_experiment.py --data synthetic --outdir results_synthetic  # design benchmark (~15 min)
-./.venv/bin/python run_experiment.py --data ieee --quick              # IEEE smoke run (~8 min)
+./.venv/bin/python run_experiment.py --data ieee                      # PRIMARY: real IEEE-CIS (~3.5 h) -> experiments/ieee_full/
+./.venv/bin/python run_experiment.py --data synthetic --outdir experiments/synthetic  # design benchmark (~15 min)
+./.venv/bin/python run_experiment.py --data ieee --quick --outdir experiments/ieee_smoke  # IEEE smoke run (~8 min)
 ./.venv/bin/python -m src.qrc_pennylane                               # verify the QRC simulator vs PennyLane
 ```
 
@@ -77,16 +90,19 @@ Place the extracted Kaggle files under `dataset/…IEEE-CIS…/` (or set
 ## Notes / honesty
 
 - **Primary run = real IEEE-CIS** (`run_experiment.py --data ieee`, `src/data_ieee.py`,
-  590,540 transactions) — outputs in `results/`. See `../Phase2-PoC-Report.md`
-  and `primary datasets compare.md` for the numbers and the synthetic-vs-real
-  comparison.
+  590,540 transactions) — outputs in `experiments/ieee_full/`. See
+  `../Phase2-PoC-Report.md` and `primary datasets compare.md` for the numbers
+  and the synthetic-vs-real comparison.
 - **Synthetic generator** (`src/data.py`, default `--data synthetic`) is a
   *design benchmark*: it deliberately injects account-takeover / ordered-sequence
   fraud so a temporal model has something to find. Its absolute numbers, and any
   result that depends on injected sequential fraud (B5 gain, shuffle penalty,
   batch-smoothing gain), do **not** carry to real data — every one of them
-  weakened or reversed on IEEE-CIS. Regenerate with
-  `run_experiment.py --data synthetic --outdir results_synthetic`.
+  weakened or reversed on IEEE-CIS. The original synthetic full run's outputs
+  were overwritten by an `ieee_full` run that reused the same output dir before
+  this reorg (its log survives as `experiments/ieee_full/synthetic_run_stale.log`,
+  its numbers are preserved in `primary datasets compare.md`). Regenerate with
+  `run_experiment.py --data synthetic --outdir experiments/synthetic`.
 - A 6–8 qubit reservoir is, per Fujii & Nakajima (2016), in the class of a
   ~100–500 node ESN. This PoC is a NISQ-era feature-discovery study, validated
   offline; it never claims quantum advantage.

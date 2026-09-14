@@ -6,8 +6,7 @@ data/
 raw/
 
 # Large generated outputs
-results/predictions.csv
-results_ieee_smoke/predictions.csv
+experiments/*/predictions.csv
 *.log.prev*
 
 # ── Python ──

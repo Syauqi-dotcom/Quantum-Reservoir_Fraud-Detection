@@ -13,7 +13,7 @@
 run:
   seed: 42
   quick: false          # true -> small/fast config for smoke tests
-  outdir: experiments/synthetic
+  outdir: ..
 
 # ---------------------------------------------------------------------
 # 1. Synthetic data  (stand-in for IEEE-CIS: no Kaggle credentials in
@@ -24,7 +24,7 @@ run:
 # ---------------------------------------------------------------------
 data:
   # --- real IEEE-CIS run (python run_experiment.py --data ieee) ---
-  ieee_dir: null            # null -> auto-detect dataset/*IEEE-CIS*/ ; else explicit path
+  ieee_dir: null            # null -> auto-detect code/dataset/*IEEE-CIS*/ ; else explicit path
   ieee_subsample: null      # null -> full 590,540 train rows ; int -> systematic time-preserving subsample
   # --- synthetic generator (default) ---
   n_entities: 6000
@@ -37,9 +37,13 @@ data:
   p_hard_fraud_per_txn: 0.006      # almost no signal anywhere      -> mostly missed (realistic)
   frac_legit_anomalous: 0.08  # legit but looks suspicious statically -> false-decline risk
   # entity-key sensitivity test (improvement #1 from the review)
+  # E2 replaced with the IEEE-CIS 1st-place "UID" trick: card1+addr1+D1n
+  # (D1n = day-of-transaction - D1, ~constant per real client, cancels D1's
+  # daily drift) instead of the noisier card1+card2+card3+addr1 baseline.
+  # See experiments/ieee_full/ (baseline E2) vs this run for the A/B.
   entity_keys:
     E1: [card1, card2, card3]
-    E2: [card1, card2, card3, addr1]
+    E2: [card1, addr1, D1n]
 
 split:
   strategy: chronological     # FROZEN - never random for the headline number
