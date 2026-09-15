@@ -1,0 +1,6 @@
+# Minimal deps for the Amazon Braket cross-check only (src/qrc_braket.py).
+# Deliberately separate from the main experiment requirements.txt / shared
+# venv so installing this can't touch numpy/scipy pins that other jobs
+# (tune, confirm) already rely on.
+numpy==2.5.2
+amazon-braket-sdk==1.127.0

@@ -913,16 +913,28 @@ class Experiment:
         outdir = self.outdir / "plots"
         try:
             self.log("plots ...")
-            plt_.pr_curves({"B4 (LightGBM+rolling)": (yte, self.p_b4_raw["test"]),
-                            "ESN hybrid": (yte, self.p_esn_e2e),
-                            "Q3 QRC hybrid": (yte, self.p_q3_e2e)}, outdir)
-            plt_.roc_curves({"B4": (yte, self.p_b4_raw["test"]),
-                             "Q3 QRC hybrid": (yte, self.p_q3_e2e)}, outdir)
-            plt_.calibration_plot({"B4 calibrated": (yte, self.p0["test"]),
-                                   "Q3 hybrid": (yte, self.p_q3_e2e)}, outdir)
+            plt_.pr_curves({"Classic only (LightGBM)": (yte, self.p_b4_raw["test"]),
+                            "Classic + classical reservoir (ESN)": (yte, self.p_esn_e2e),
+                            "Classic + quantum reservoir (QRC)": (yte, self.p_q3_e2e)}, outdir)
+            plt_.roc_curves({"Classic only (LightGBM)": (yte, self.p_b4_raw["test"]),
+                             "Classic + quantum reservoir (QRC)": (yte, self.p_q3_e2e)}, outdir)
+            plt_.calibration_plot({"Classic only (LightGBM), calibrated": (yte, self.p0["test"]),
+                                   "Classic + quantum reservoir (QRC)": (yte, self.p_q3_e2e)}, outdir)
             plt_.routing_plot(self.p0["test"], yte, self.band, outdir)
             bm = self._band_models
-            plt_.bar_compare(list(bm.keys()),
+            # plain-English display labels for the plot only -- the underlying
+            # dict keys (B4_p0, Q0_qrc_only, ...) stay unchanged since report.py
+            # and metrics.json look them up by those exact technical names.
+            plot_label = {
+                "B4_p0": "Classic only (LightGBM)",
+                "Q0_qrc_only": "Reservoir only (QRC)",
+                "Q1_score_fusion": "Fusion - score level",
+                "Q2_feature_fusion": "Fusion - feature level",
+                "Q2_no_p0_ablation": "Fusion - feature level, no classic (ablation)",
+                f"Q_deployed[{self.q3_variant}]": "Deployed hybrid (classic + QRC)",
+                f"ESN_deployed[{self.q3_variant}]": "Deployed hybrid (classic + ESN)",
+            }
+            plt_.bar_compare([plot_label.get(k, k) for k in bm.keys()],
                              [ev.auprc_fn(y_all[te], p) for p in bm.values()],
                              "AUPRC on the ambiguous band (test)", "AUPRC",
                              outdir, "band_auprc.png",
@@ -932,7 +944,15 @@ class Experiment:
                 names = ["ideal"] + [k for k in ("no_entanglement", "random_reservoir",
                          "shuffle_sequence", "no_history_K1") if k in ab]
                 vals = [ab["ideal_feature_fusion_band_auprc"]] + [ab[k] for k in names[1:]]
-                plt_.bar_compare(names, vals, "QRC ablations - band AUPRC", "AUPRC",
+                ablation_label = {
+                    "ideal": "Full model (no ablation)",
+                    "no_entanglement": "No entanglement (ablation)",
+                    "random_reservoir": "Random reservoir (ablation)",
+                    "shuffle_sequence": "Shuffled time order (ablation)",
+                    "no_history_K1": "No history, K=1 (ablation)",
+                }
+                plt_.bar_compare([ablation_label.get(n, n) for n in names], vals,
+                                 "QRC ablations - band AUPRC", "AUPRC",
                                  outdir, "ablations.png",
                                  ref=ev.auprc_fn(y_all[te], self.p0["test"][self.amb["test"]]))
                 if ab.get("shots_sweep"):
