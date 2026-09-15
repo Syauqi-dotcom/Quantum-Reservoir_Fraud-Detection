@@ -9,7 +9,7 @@
 # layout differs:
 #   sbatch --export=SHARED_VENV=/other/path,SHARED_DATASET=/other/path run_quasi_tune.slurm
 
-#SBATCH --job-name=abstraction_qrc_tune
+#SBATCH --job-name="QRC tune"
 #SBATCH --partition=qdisk        # confirm with `sinfo` if this differs on your account
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

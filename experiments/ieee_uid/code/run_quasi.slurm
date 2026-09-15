@@ -8,7 +8,7 @@
 # That template is written for an MPI/Quantum-ESPRESSO workload; this job is a
 # single-process Python pipeline, so there is no mpirun / multi-node step.
 
-#SBATCH --job-name=abstraction_ieee_uid
+#SBATCH --job-name="QRC ieee"
 #SBATCH --partition=qdisk        # TODO: confirm the real partition name with `sinfo` on Quasi -- qdisk is the only one named in the tutorial
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

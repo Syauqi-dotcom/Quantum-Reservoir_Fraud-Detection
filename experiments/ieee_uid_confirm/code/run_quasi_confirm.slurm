@@ -12,7 +12,7 @@
 # (experiments/ieee_uid) -- override either path if your layout differs:
 #   sbatch --export=SHARED_VENV=/other/path,SHARED_DATASET=/other/path run_quasi_confirm.slurm
 
-#SBATCH --job-name=abstraction_qrc_confirm
+#SBATCH --job-name="QRC run"
 #SBATCH --partition=qdisk        # confirm with `sinfo` if this differs on your account
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

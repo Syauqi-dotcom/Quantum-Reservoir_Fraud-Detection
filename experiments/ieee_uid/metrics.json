@@ -420,7 +420,7 @@
       "band_auprc": 0.09740055017251245,
       "hybrid_band_auprc": 0.11430815219807605,
       "full_test_auprc": 0.46001752324568534,
-      "inference_latency_ms_per_txn": 0.0017144376135847235
+      "inference_latency_ms_per_txn": 0.002330484111297194
     }
   },
   "smoothing": {

@@ -617,7 +617,7 @@
     "shap": "0.52.0",
     "pennylane": "0.45.1"
   },
-  "started": "2026-09-15 05:20:02",
+  "started": "2026-09-15 08:55:35",
   "frozen": {
     "entity_key": "E2",
     "split": "chronological_60_20_20",
@@ -643,7 +643,7 @@
     "spatial_multiplex": 1,
     "shots": "ideal_statevector",
     "simulator": "numpy density-matrix (exact); PennyLane cross-check in src/qrc_pennylane.py",
-    "qrc_embed_seconds": 70.6996021270752
+    "qrc_embed_seconds": 75.11561989784241
   },
-  "runtime_seconds": 3821.7765641212463
+  "runtime_seconds": 4073.9566009044647
 }
