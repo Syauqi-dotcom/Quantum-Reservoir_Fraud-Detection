@@ -9,7 +9,7 @@
     "h": 0.1,
     "K": 6,
     "val_band_auprc": 0.20848187646542732,
-    "seconds": 76.23,
+    "seconds": 80.28,
     "per_seed": [
       {
         "seed": 7,
@@ -39,7 +39,7 @@
     "h": 0.1,
     "K": 8,
     "val_band_auprc": 0.20062549901067536,
-    "seconds": 238.97,
+    "seconds": 321.81,
     "per_seed": [
       {
         "seed": 7,
@@ -69,7 +69,7 @@
     "h": 0.3,
     "K": 4,
     "val_band_auprc": 0.20262649417886036,
-    "seconds": 116.04,
+    "seconds": 151.22,
     "per_seed": [
       {
         "seed": 7,
@@ -99,7 +99,7 @@
     "h": 1.2,
     "K": 8,
     "val_band_auprc": 0.20428532712160372,
-    "seconds": 180.31,
+    "seconds": 243.0,
     "per_seed": [
       {
         "seed": 7,
@@ -129,7 +129,7 @@
     "h": 0.8,
     "K": 6,
     "val_band_auprc": 0.20478317441243754,
-    "seconds": 84.14,
+    "seconds": 90.48,
     "per_seed": [
       {
         "seed": 7,
